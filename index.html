@@ -1,0 +1,801 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RupeeCalc Pro - EMI, SIP & GST Financial Calculator</title>
+    <meta name="description" content="Free online Loan EMI, Mutual Fund SIP, and GST Calculator in India. Instant accurate calculations with visual breakdown.">
+    <style>
+        :root {
+            --primary: #2563eb;
+            --primary-dark: #1d4ed8;
+            --secondary: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --bg: #f8fafc;
+            --card: #ffffff;
+            --text: #0f172a;
+            --muted: #64748b;
+            --border: #e2e8f0;
+        }
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+        }
+        body {
+            background-color: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+        }
+
+        /* Header */
+        header {
+            background: var(--card);
+            border-bottom: 1px solid var(--border);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.03);
+        }
+        .nav-container {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 14px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .logo {
+            font-size: 1.4rem;
+            font-weight: 800;
+            color: var(--primary);
+            text-decoration: none;
+        }
+        .logo span { color: var(--secondary); }
+        .nav-links a {
+            margin-left: 16px;
+            text-decoration: none;
+            color: var(--muted);
+            font-weight: 600;
+            font-size: 0.92rem;
+            cursor: pointer;
+        }
+        .nav-links a:hover { color: var(--primary); }
+
+        /* Ad-Free Status Badge */
+        .adfree-badge {
+            display: none;
+            background: #dcfce7;
+            color: #15803d;
+            font-size: 0.8rem;
+            font-weight: 700;
+            padding: 5px 12px;
+            border-radius: 20px;
+            border: 1px solid #86efac;
+        }
+
+        /* Container */
+        .container {
+            max-width: 1100px;
+            margin: 20px auto;
+            padding: 0 16px;
+        }
+
+        /* Ad Slots & Random Highlight Logic */
+        .ad-wrapper {
+            margin: 18px 0;
+            transition: all 0.3s ease;
+        }
+        .ad-instruction {
+            display: none;
+            background: linear-gradient(90deg, #f59e0b, #ea580c);
+            color: #fff;
+            font-size: 0.85rem;
+            font-weight: 700;
+            padding: 8px 14px;
+            border-radius: 10px 10px 0 0;
+            text-align: center;
+            animation: pulseBg 1.8s infinite;
+        }
+        @keyframes pulseBg {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.85; }
+        }
+        .ad-slot {
+            background: #f1f5f9;
+            border: 1px dashed #cbd5e1;
+            border-radius: 10px;
+            padding: 12px;
+            text-align: center;
+            color: var(--muted);
+            font-size: 0.85rem;
+            min-height: 90px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+        .ad-wrapper.target-ad .ad-instruction {
+            display: block;
+        }
+        .ad-wrapper.target-ad .ad-slot {
+            border: 2px solid #f59e0b;
+            border-top: none;
+            border-radius: 0 0 10px 10px;
+            background: #fffbeb;
+            box-shadow: 0 6px 20px rgba(245, 158, 11, 0.18);
+        }
+
+        /* Complete removal when Ad-Free is unlocked */
+        body.ad-free-active .ad-wrapper {
+            display: none !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            height: 0 !important;
+        }
+        body.ad-free-active .adfree-badge {
+            display: inline-block;
+        }
+
+        /* Calculator Card */
+        .calc-wrapper {
+            background: var(--card);
+            border-radius: 16px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+            border: 1px solid var(--border);
+            overflow: hidden;
+        }
+        .tabs {
+            display: flex;
+            background: #f1f5f9;
+            border-bottom: 1px solid var(--border);
+        }
+        .tab-btn {
+            flex: 1;
+            padding: 16px 10px;
+            border: none;
+            background: none;
+            font-size: 1rem;
+            font-weight: 700;
+            color: var(--muted);
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .tab-btn.active {
+            background: var(--card);
+            color: var(--primary);
+            border-bottom: 3px solid var(--primary);
+        }
+
+        .calc-grid {
+            display: grid;
+            grid-template-columns: 1.1fr 0.9fr;
+            gap: 30px;
+            padding: 28px;
+        }
+
+        .input-group { margin-bottom: 22px; }
+        .input-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+        .input-header label { font-weight: 600; font-size: 0.95rem; }
+        .num-input {
+            width: 135px;
+            padding: 8px 12px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 700;
+            color: var(--primary);
+            text-align: right;
+            background: #eff6ff;
+        }
+        input[type="range"] {
+            width: 100%;
+            height: 6px;
+            background: #dbeafe;
+            border-radius: 5px;
+            outline: none;
+            cursor: pointer;
+            accent-color: var(--primary);
+        }
+
+        /* Result Box */
+        .result-box {
+            background: #f8fafc;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+        .main-result {
+            text-align: center;
+            padding-bottom: 18px;
+            border-bottom: 1px solid var(--border);
+        }
+        .main-result span {
+            font-size: 0.85rem;
+            color: var(--muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-weight: 700;
+        }
+        .main-result h2 {
+            font-size: 2.2rem;
+            color: var(--primary);
+            margin-top: 6px;
+        }
+
+        .progress-container { margin: 20px 0; }
+        .progress-bar {
+            height: 14px;
+            background: var(--secondary);
+            border-radius: 10px;
+            overflow: hidden;
+            display: flex;
+        }
+        .progress-fill {
+            height: 100%;
+            background: var(--primary);
+            transition: width 0.3s ease;
+        }
+        .legend {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.85rem;
+            margin-top: 8px;
+            color: var(--muted);
+        }
+        .dot {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            margin-right: 5px;
+        }
+        .breakdown-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px dashed var(--border);
+            font-size: 0.95rem;
+        }
+
+        /* SEO Content */
+        .seo-section {
+            background: var(--card);
+            border-radius: 16px;
+            padding: 28px;
+            margin-top: 25px;
+            border: 1px solid var(--border);
+        }
+        .seo-section h1, .seo-section h2 { margin-bottom: 10px; color: var(--text); }
+        .seo-section p { color: var(--muted); margin-bottom: 16px; }
+
+        /* Modals (Legal Pages & AdBlock Lock) */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(15, 23, 42, 0.85);
+            backdrop-filter: blur(5px);
+            z-index: 9999;
+            align-items: center;
+            justify-content: center;
+            padding: 16px;
+        }
+        .modal-card {
+            background: var(--card);
+            max-width: 600px;
+            width: 100%;
+            max-height: 85vh;
+            border-radius: 16px;
+            padding: 26px;
+            overflow-y: auto;
+            position: relative;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.3);
+        }
+        .modal-close {
+            position: absolute;
+            top: 16px;
+            right: 16px;
+            background: #f1f5f9;
+            border: none;
+            width: 34px;
+            height: 34px;
+            border-radius: 50%;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .modal-card h2 { margin-bottom: 12px; color: var(--primary); }
+        .modal-card p { font-size: 0.92rem; color: var(--muted); margin-bottom: 12px; }
+
+        /* AdBlock Lock Screen Specifics */
+        .adblock-card {
+            text-align: center;
+            max-width: 460px;
+            border: 2px solid var(--danger);
+        }
+        .adblock-icon {
+            font-size: 3rem;
+            margin-bottom: 10px;
+        }
+        .btn-reload {
+            background: var(--primary);
+            color: #fff;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-weight: 700;
+            font-size: 1rem;
+            cursor: pointer;
+            margin-top: 12px;
+            width: 100%;
+        }
+
+        /* Footer */
+        footer {
+            background: #0f172a;
+            color: #94a3b8;
+            text-align: center;
+            padding: 30px 16px;
+            margin-top: 40px;
+            font-size: 0.9rem;
+        }
+        footer a {
+            color: #cbd5e1;
+            margin: 0 10px;
+            text-decoration: none;
+            cursor: pointer;
+        }
+        footer a:hover { color: #ffffff; text-decoration: underline; }
+
+        @media (max-width: 768px) {
+            .calc-grid { grid-template-columns: 1fr; padding: 18px; gap: 20px; }
+            .tab-btn { font-size: 0.88rem; padding: 14px 6px; }
+            .main-result h2 { font-size: 1.8rem; }
+            .nav-links { display: none; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Header -->
+    <header>
+        <div class="nav-container">
+            <a href="#" class="logo">Rupee<span>Calc</span></a>
+            <div>
+                <span class="adfree-badge" id="adfree-badge">✓ Ad-Free Mode Active</span>
+                <nav class="nav-links" style="display: inline-block;">
+                    <a onclick="switchTab('emi')">EMI</a>
+                    <a onclick="switchTab('sip')">SIP</a>
+                    <a onclick="switchTab('gst')">GST</a>
+                    <a onclick="openModal('privacy')">Privacy</a>
+                    <a onclick="openModal('disclaimer')">Disclaimer</a>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <div class="container">
+
+        <!-- ADSTERRA SLOT 1: TOP BANNER -->
+        <div class="ad-wrapper" id="ad-wrap-0" onclick="handleAdInteraction(0)">
+            <div class="ad-instruction">
+                ✨ Offer: Is Ad par Click karke Back aayein — Sare Ads gayab ho jayenge (Ad-Free Mode)!
+            </div>
+            <div class="ad-slot">
+                <!-- PASTE ADSTERRA 728x90 OR 320x50 BANNER SCRIPT BELOW -->
+                <span>Sponsored Advertisement (Slot 1 - Top Banner)</span>
+            </div>
+        </div>
+
+        <!-- Calculator Section -->
+        <div class="calc-wrapper" id="calculator">
+            <div class="tabs">
+                <button class="tab-btn active" id="tab-emi" onclick="switchTab('emi')">Loan EMI</button>
+                <button class="tab-btn" id="tab-sip" onclick="switchTab('sip')">Mutual Fund SIP</button>
+                <button class="tab-btn" id="tab-gst" onclick="switchTab('gst')">GST Calculator</button>
+            </div>
+
+            <div class="calc-grid">
+                <!-- Inputs -->
+                <div class="inputs-area">
+                    <div class="input-group">
+                        <div class="input-header">
+                            <label id="label-1">Loan Amount (₹)</label>
+                            <input type="number" id="input-1" class="num-input" value="500000" oninput="syncSlider(1)">
+                        </div>
+                        <input type="range" id="slider-1" min="10000" max="10000000" step="5000" value="500000" oninput="syncInput(1)">
+                    </div>
+
+                    <div class="input-group">
+                        <div class="input-header">
+                            <label id="label-2">Interest Rate (% p.a.)</label>
+                            <input type="number" id="input-2" class="num-input" value="8.5" step="0.1" oninput="syncSlider(2)">
+                        </div>
+                        <input type="range" id="slider-2" min="1" max="30" step="0.1" value="8.5" oninput="syncInput(2)">
+                    </div>
+
+                    <div class="input-group" id="group-3">
+                        <div class="input-header">
+                            <label id="label-3">Loan Tenure (Years)</label>
+                            <input type="number" id="input-3" class="num-input" value="5" oninput="syncSlider(3)">
+                        </div>
+                        <input type="range" id="slider-3" min="1" max="30" step="1" value="5" oninput="syncInput(3)">
+                    </div>
+                </div>
+
+                <!-- Results -->
+                <div class="result-box">
+                    <div>
+                        <div class="main-result">
+                            <span id="res-title">Monthly EMI</span>
+                            <h2 id="res-main">₹10,258</h2>
+                        </div>
+
+                        <div class="progress-container">
+                            <div class="progress-bar">
+                                <div class="progress-fill" id="prog-bar" style="width: 81%;"></div>
+                            </div>
+                            <div class="legend">
+                                <span><i class="dot" style="background: var(--primary);"></i><span id="leg-1">Principal</span></span>
+                                <span><i class="dot" style="background: var(--secondary);"></i><span id="leg-2">Interest</span></span>
+                            </div>
+                        </div>
+
+                        <div class="breakdown-row">
+                            <span id="row1-label">Principal Amount:</span>
+                            <strong id="row1-val">₹5,00,000</strong>
+                        </div>
+                        <div class="breakdown-row">
+                            <span id="row2-label">Total Interest:</span>
+                            <strong id="row2-val">₹1,15,496</strong>
+                        </div>
+                        <div class="breakdown-row">
+                            <span id="row3-label">Total Payable:</span>
+                            <strong id="row3-val">₹6,15,496</strong>
+                        </div>
+                    </div>
+
+                    <!-- ADSTERRA SLOT 2: HIGH-CTR RESULT SPOT -->
+                    <div class="ad-wrapper" id="ad-wrap-1" style="margin-top: 18px; margin-bottom: 0;" onclick="handleAdInteraction(1)">
+                        <div class="ad-instruction">
+                            ✨ Click Here & Return to Remove All Ads Until Refresh!
+                        </div>
+                        <div class="ad-slot" style="min-height: 75px;">
+                            <!-- PASTE ADSTERRA 300x250 OR NATIVE BANNER SCRIPT BELOW -->
+                            <span>Sponsored Offer (Slot 2 - Result Box)</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ADSTERRA SLOT 3: BOTTOM NATIVE BANNER -->
+        <div class="ad-wrapper" id="ad-wrap-2" onclick="handleAdInteraction(2)">
+            <div class="ad-instruction">
+                ✨ Special Unlock: Is Ad par Click karke Wapas aayein aur Ad-Free Calculator chalayein!
+            </div>
+            <div class="ad-slot">
+                <!-- PASTE ADSTERRA NATIVE BANNER SCRIPT BELOW -->
+                <span>Sponsored Advertisement (Slot 3 - Bottom Native)</span>
+            </div>
+        </div>
+
+        <!-- SEO Guide Section -->
+        <section class="seo-section">
+            <h1>India's Smart Financial Calculator: EMI, SIP & GST</h1>
+            <p><strong>RupeeCalc Pro</strong> helps you plan your Home Loan, Car Loan, Personal Loan EMIs, Mutual Fund SIP returns, and GST tax splits accurately in real time.</p>
+            <h2>How to Use This Calculator?</h2>
+            <p>Select your desired tool from the top tabs, adjust the sliders or enter the exact amount in Rupees, and view your instant breakdown on the right panel.</p>
+        </section>
+
+    </div>
+
+    <!-- Footer with Mandatory Policy Links -->
+    <footer>
+        <p>&copy; 2026 RupeeCalc Pro. Built for Smart Financial Planning.</p>
+        <p style="margin-top: 12px;">
+            <a onclick="openModal('about')">About Us</a> |
+            <a onclick="openModal('privacy')">Privacy Policy</a> |
+            <a onclick="openModal('disclaimer')">Disclaimer</a> |
+            <a onclick="openModal('contact')">Contact Us</a>
+        </p>
+    </footer>
+
+    <!-- LEGAL MODALS (Privacy, Disclaimer, About, Contact) -->
+    <div class="modal-overlay" id="legal-modal">
+        <div class="modal-card">
+            <button class="modal-close" onclick="closeModal()">×</button>
+            <div id="modal-body"></div>
+        </div>
+    </div>
+
+    <!-- DNS / ADGUARD / ADBLOCK DETECTOR POPUP -->
+    <div class="modal-overlay" id="adblock-modal">
+        <div class="modal-card adblock-card">
+            <div class="adblock-icon">🛡️</div>
+            <h2>AdBlocker / Private DNS Detected!</h2>
+            <p>Humne detect kiya hai ki aap <strong>AdGuard DNS (dns.adguard.com)</strong> ya koi AdBlocker extension use kar rahe hain.</p>
+            <p style="background: #fef2f2; color: #991b1b; padding: 10px; border-radius: 8px; font-weight: 600;">
+                💡 Tip: Apna DNS/AdBlocker band karke page reload karein. Uske baad highlighted Ad par sirf 1 baar click karke back aane par poori website 100% Ad-Free ho jayegi!
+            </p>
+            <button class="btn-reload" onclick="location.reload()">I Turned It Off — Reload Page</button>
+        </div>
+    </div>
+
+    <script>
+        /* ==========================================================
+           1. RANDOM TARGET AD & CLICK-TO-REMOVE ALL ADS LOGIC
+           ========================================================== */
+        const totalAdSlots = 3;
+        // Har page load par randomly 0, 1, ya 2 select hoga
+        const randomTargetIndex = Math.floor(Math.random() * totalAdSlots);
+        let userClickedTargetAd = false;
+
+        function initRandomAdTarget() {
+            const targetEl = document.getElementById('ad-wrap-' + randomTargetIndex);
+            if (targetEl) {
+                targetEl.classList.add('target-ad');
+            }
+        }
+
+        // Jab user normal div ya ad container par click kare
+        function handleAdInteraction(slotIndex) {
+            if (slotIndex === randomTargetIndex) {
+                userClickedTargetAd = true;
+                // Agar ad naye tab me khulne me 1 sec le, aur user wapas aaye toh remove kar do
+                setTimeout(() => {
+                    if (document.hidden) {
+                        // User went to ad tab, wait for return
+                    } else {
+                        // Fallback unlock after 1.5s
+                        unlockAdFreeMode();
+                    }
+                }, 1500);
+            }
+        }
+
+        // Iframe (Adsterra Banner) ke andar click detect karne ke liye blur/focus logic
+        window.addEventListener('blur', () => {
+            const active = document.activeElement;
+            const targetWrap = document.getElementById('ad-wrap-' + randomTargetIndex);
+            if (targetWrap && (targetWrap.contains(active) || active.tagName === 'IFRAME')) {
+                userClickedTargetAd = true;
+            }
+        });
+
+        // Jab user Ad par click karke Back aaye (Tab wapas focus ya visible ho)
+        window.addEventListener('focus', () => {
+            if (userClickedTargetAd) {
+                unlockAdFreeMode();
+            }
+        });
+        document.addEventListener('visibilitychange', () => {
+            if (!document.hidden && userClickedTargetAd) {
+                unlockAdFreeMode();
+            }
+        });
+
+        function unlockAdFreeMode() {
+            document.body.classList.add('ad-free-active');
+            // Remove any floating Adsterra Social Bar iframes if present
+            document.querySelectorAll('.ad-wrapper').forEach(el => el.remove());
+        }
+
+        /* ==========================================================
+           2. ADGUARD DNS (dns.adguard.com) & ADBLOCK DETECTOR
+           ========================================================== */
+        async function detectAdBlockAndDNS() {
+            let blocked = false;
+
+            // Test 1: Bait Element Check (Cosmetic filters)
+            const bait = document.createElement('div');
+            bait.className = 'pub_300x250 pub_300x250m pub_728x90 text-ad textAd text_ad ad-banner adsbox';
+            bait.style.cssText = 'width:1px !important; height:1px !important; position:absolute !important; left:-10000px !important; top:-1000px !important;';
+            document.body.appendChild(bait);
+
+            await new Promise(r => setTimeout(r, 150));
+            if (bait.offsetParent === null || bait.offsetHeight === 0 || window.getComputedStyle(bait).display === 'none') {
+                blocked = true;
+            }
+            bait.remove();
+
+            // Test 2: Network / DNS AdGuard Check (dns.adguard.com blocks known ad domains)
+            if (!blocked) {
+                try {
+                    await fetch('https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js', {
+                        method: 'HEAD',
+                        mode: 'no-cors',
+                        cache: 'no-store'
+                    });
+                } catch (err) {
+                    blocked = true;
+                }
+            }
+
+            if (blocked) {
+                document.getElementById('adblock-modal').style.display = 'flex';
+                document.body.style.overflow = 'hidden';
+            }
+        }
+
+        /* ==========================================================
+           3. CALCULATOR LOGIC (EMI, SIP, GST)
+           ========================================================== */
+        let currentMode = 'emi';
+
+        function formatINR(num) {
+            return '₹' + Math.round(num).toLocaleString('en-IN');
+        }
+
+        function switchTab(mode) {
+            currentMode = mode;
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            document.getElementById('tab-' + mode).classList.add('active');
+
+            const l1 = document.getElementById('label-1');
+            const l2 = document.getElementById('label-2');
+            const l3 = document.getElementById('label-3');
+            const g3 = document.getElementById('group-3');
+            const i1 = document.getElementById('input-1');
+            const s1 = document.getElementById('slider-1');
+            const i2 = document.getElementById('input-2');
+            const s2 = document.getElementById('slider-2');
+
+            if (mode === 'emi') {
+                l1.innerText = 'Loan Amount (₹)';
+                s1.min = 10000; s1.max = 10000000; s1.step = 10000; i1.value = 500000; s1.value = 500000;
+                l2.innerText = 'Interest Rate (% p.a.)';
+                s2.min = 1; s2.max = 30; s2.step = 0.1; i2.value = 8.5; s2.value = 8.5;
+                l3.innerText = 'Loan Tenure (Years)';
+                g3.style.display = 'block';
+                document.getElementById('leg-1').innerText = 'Principal';
+                document.getElementById('leg-2').innerText = 'Interest';
+            } else if (mode === 'sip') {
+                l1.innerText = 'Monthly SIP Amount (₹)';
+                s1.min = 500; s1.max = 200000; s1.step = 500; i1.value = 5000; s1.value = 5000;
+                l2.innerText = 'Expected Return (% p.a.)';
+                s2.min = 1; s2.max = 30; s2.step = 0.5; i2.value = 12; s2.value = 12;
+                l3.innerText = 'Investment Duration (Years)';
+                g3.style.display = 'block';
+                document.getElementById('leg-1').innerText = 'Invested';
+                document.getElementById('leg-2').innerText = 'Wealth Gain';
+            } else if (mode === 'gst') {
+                l1.innerText = 'Original Amount (₹)';
+                s1.min = 100; s1.max = 1000000; s1.step = 500; i1.value = 10000; s1.value = 10000;
+                l2.innerText = 'GST Rate (%)';
+                s2.min = 3; s2.max = 28; s2.step = 1; i2.value = 18; s2.value = 18;
+                g3.style.display = 'none';
+                document.getElementById('leg-1').innerText = 'Net Amount';
+                document.getElementById('leg-2').innerText = 'GST Tax';
+            }
+            calculate();
+        }
+
+        function syncInput(id) {
+            document.getElementById('input-' + id).value = document.getElementById('slider-' + id).value;
+            calculate();
+        }
+
+        function syncSlider(id) {
+            document.getElementById('slider-' + id).value = document.getElementById('input-' + id).value;
+            calculate();
+        }
+
+        function calculate() {
+            const v1 = parseFloat(document.getElementById('input-1').value) || 0;
+            const v2 = parseFloat(document.getElementById('input-2').value) || 0;
+            const v3 = parseFloat(document.getElementById('input-3').value) || 1;
+
+            if (currentMode === 'emi') {
+                const r = v2 / 12 / 100;
+                const n = v3 * 12;
+                const emi = r > 0 ? (v1 * r * Math.pow(1 + r, n)) / (Math.pow(1 + r, n) - 1) : v1 / n;
+                const totalPayable = emi * n;
+                const totalInterest = totalPayable - v1;
+                const ratio = totalPayable > 0 ? (v1 / totalPayable) * 100 : 50;
+
+                document.getElementById('res-title').innerText = 'Monthly Loan EMI';
+                document.getElementById('res-main').innerText = formatINR(emi);
+                document.getElementById('row1-label').innerText = 'Principal Amount:';
+                document.getElementById('row1-val').innerText = formatINR(v1);
+                document.getElementById('row2-label').innerText = 'Total Interest:';
+                document.getElementById('row2-val').innerText = formatINR(totalInterest);
+                document.getElementById('row3-label').innerText = 'Total Payable:';
+                document.getElementById('row3-val').innerText = formatINR(totalPayable);
+                document.getElementById('prog-bar').style.width = ratio + '%';
+
+            } else if (currentMode === 'sip') {
+                const i = v2 / 12 / 100;
+                const n = v3 * 12;
+                const invested = v1 * n;
+                const futureVal = i > 0 ? v1 * ((Math.pow(1 + i, n) - 1) / i) * (1 + i) : invested;
+                const returns = futureVal - invested;
+                const ratio = futureVal > 0 ? (invested / futureVal) * 100 : 50;
+
+                document.getElementById('res-title').innerText = 'Total Maturity Value';
+                document.getElementById('res-main').innerText = formatINR(futureVal);
+                document.getElementById('row1-label').innerText = 'Total Invested:';
+                document.getElementById('row1-val').innerText = formatINR(invested);
+                document.getElementById('row2-label').innerText = 'Est. Wealth Gain:';
+                document.getElementById('row2-val').innerText = formatINR(returns);
+                document.getElementById('row3-label').innerText = 'Total Maturity:';
+                document.getElementById('row3-val').innerText = formatINR(futureVal);
+                document.getElementById('prog-bar').style.width = ratio + '%';
+
+            } else if (currentMode === 'gst') {
+                const gstAmount = (v1 * v2) / 100;
+                const totalWithGst = v1 + gstAmount;
+                const ratio = totalWithGst > 0 ? (v1 / totalWithGst) * 100 : 80;
+
+                document.getElementById('res-title').innerText = 'Total Price (Inc. GST)';
+                document.getElementById('res-main').innerText = formatINR(totalWithGst);
+                document.getElementById('row1-label').innerText = 'Net Amount:';
+                document.getElementById('row1-val').innerText = formatINR(v1);
+                document.getElementById('row2-label').innerText = 'Total GST (' + v2 + '%):';
+                document.getElementById('row2-val').innerText = formatINR(gstAmount);
+                document.getElementById('row3-label').innerText = 'CGST + SGST Split:';
+                document.getElementById('row3-val').innerText = formatINR(gstAmount / 2) + ' each';
+                document.getElementById('prog-bar').style.width = ratio + '%';
+            }
+        }
+
+        /* ==========================================================
+           4. LEGAL PAGES CONTENT (PRIVACY POLICY, DISCLAIMER, ETC.)
+           ========================================================== */
+        const legalPages = {
+            privacy: `
+                <h2>Privacy Policy</h2>
+                <p><strong>Effective Date:</strong> January 1, 2026</p>
+                <p>At <strong>RupeeCalc Pro</strong>, we respect your privacy. All financial calculations (EMI, SIP, GST) happen 100% locally inside your browser. We do not store, collect, or transmit any of the financial numbers you enter on our website.</p>
+                <p><strong>Cookies & Third-Party Ads:</strong> We use third-party advertising networks (such as Adsterra) to serve advertisements when you visit our website. These networks may use cookies and web beacons to display relevant ads based on your visit.</p>
+                <p>By using our website, you consent to our Privacy Policy and agree to its terms.</p>
+            `,
+            disclaimer: `
+                <h2>Financial Disclaimer</h2>
+                <p>The information and calculators provided on <strong>RupeeCalc Pro</strong> are strictly for educational and informational purposes only and should not be construed as professional financial, tax, or legal advice.</p>
+                <p>While we strive to keep our mathematical formulas accurate, actual bank loan EMIs, mutual fund SIP returns, and tax liabilities may vary due to processing fees, market fluctuations, and bank rules. Please consult a certified financial advisor before making any investment or loan decisions.</p>
+            `,
+            about: `
+                <h2>About RupeeCalc Pro</h2>
+                <p><strong>RupeeCalc Pro</strong> is a free, lightweight online financial utility platform designed to help Indian users quickly calculate Loan EMIs, Mutual Fund SIP returns, and GST taxes without complex spreadsheets.</p>
+            `,
+            contact: `
+                <h2>Contact Us</h2>
+                <p>Have questions, feedback, or business inquiries? Reach out to our support team anytime:</p>
+                <p><strong>Email:</strong> support@rupeecalcpro.com</p>
+                <p>We typically respond within 24–48 business hours.</p>
+            `
+        };
+
+        function openModal(type) {
+            document.getElementById('modal-body').innerHTML = legalPages[type];
+            document.getElementById('legal-modal').style.display = 'flex';
+        }
+
+        function closeModal() {
+            document.getElementById('legal-modal').style.display = 'none';
+        }
+
+        // Initialize Everything on Page Load
+        window.addEventListener('DOMContentLoaded', () => {
+            calculate();
+            initRandomAdTarget();
+            detectAdBlockAndDNS();
+        });
+    </script>
+</body>
+</html>

@@ -14,7 +14,7 @@
 
   <!-- Live Demo Button -->
   <h3>
-    <a href="https://YOUR-LIVE-WEBSITE-LINK.com">🚀 View Live Demo</a>
+    <a href="https://rupeecalc-pro.onrender.com">🚀 View Live Demo</a>
     <span> | </span>
     <a href="#-features">✨ Features</a>
     <span> | </span>
@@ -24,6 +24,7 @@
 </div>
 
 <hr />
+![App Screenshot](./preview.png)
 
 ## 📖 About The Project
 

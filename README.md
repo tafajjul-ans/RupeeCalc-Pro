@@ -21,10 +21,17 @@
     <a href="#-how-to-use">🛠️ How to Use</a>
   </h3>
 
+  <br />
+
+  
+  <img src="./preview.png" alt="RupeeCalc Pro Preview" width="90%" style="border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.15);" />
+
 </div>
 
+<br />
 <hr />
-![App Screenshot](./preview.png)
+
+
 
 ## 📖 About The Project
 

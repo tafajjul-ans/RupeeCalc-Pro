@@ -60,11 +60,11 @@ Agar aap is project ko apne computer ya phone par chalana chahte hain, toh niche
 
 1. **Clone the Repository:**
    ```bash
-   git clone https://github.com/tafajjul-ans/rupeeCalc-pro.git
+   https://github.com/tafajjul-ans/RupeeCalc-Pro.git
    ```
 2. **Open Project Folder:**
    ```bash
-   cd rupeeCalc-pro
+   cd RupeeCalc-Pro
    ```
 3. **Run the App:**
    Simply double-click on **`index.html`** or open it using VS Code *Live Server*. No `npm install` or heavy dependencies required!
